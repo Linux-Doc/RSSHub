@@ -132,7 +132,7 @@ class ExtractMetadata {
     private static genExtractFunc = (
         varName: string,
         {
-            valuePattern = '\\w+',
+            valuePattern = String.raw`\w+`,
             assignPattern = '=',
             allowNotFound = false,
             multiple = false,
@@ -170,9 +170,9 @@ class ExtractMetadata {
     };
 
     private static commonMetadataToBeExtracted = {
-        showType: this.genExtractFunc('item_show_type', { valuePattern: '\\d+' }),
-        realShowType: this.genExtractFunc('real_item_show_type', { valuePattern: '\\d+' }),
-        createTime: this.genExtractFunc('ct', { valuePattern: '\\d+', allowNotFound: true }),
+        showType: this.genExtractFunc('item_show_type', { valuePattern: String.raw`\d+` }),
+        realShowType: this.genExtractFunc('real_item_show_type', { valuePattern: String.raw`\d+` }),
+        createTime: this.genExtractFunc('ct', { valuePattern: String.raw`\d+`, allowNotFound: true }),
         sourceUrl: this.genExtractFunc('msg_source_url', { valuePattern: `https?://[^'"]*`, allowNotFound: true }),
     };
 
@@ -207,7 +207,7 @@ class ExtractMetadata {
 
     private static audioMetadataToBeExtracted = {
         voiceId: this.genExtractFunc('voiceid', { assignPattern: ':' }),
-        duration: this.genExtractFunc('duration', { valuePattern: '\\d*', assignPattern: ':', allowNotFound: true }),
+        duration: this.genExtractFunc('duration', { valuePattern: String.raw`\d*`, assignPattern: ':', allowNotFound: true }),
     };
 
     // never seen a audio article containing multiple audio, waiting for examples
@@ -623,19 +623,21 @@ const fetchArticle = (url: string, bypassHostCheck: boolean = false) => {
  * @return {Promise<object>} - The incoming `item` object, with the article and its metadata filled in.
  */
 const finishArticleItem = async (item, setMpNameAsAuthor = false, skipLink = false) => {
-    const fetchedItem = await fetchArticle(item.link);
-    for (const key in fetchedItem) {
-        switch (key) {
-            case 'author':
-                item.author = setMpNameAsAuthor
-                    ? fetchedItem.mpName || item.author // the Official Account itself. if your route return articles from different accounts, you may want to use this
-                    : fetchedItem.author || item.author; // the real author of the article. if your route return articles from a certain account, use this
-                break;
-            case 'link':
-                item.link = skipLink ? item.link : fetchedItem.link || item.link;
-                break;
-            default:
-                item[key] = item[key] || fetchedItem[key];
+    if (item.link) {
+        const fetchedItem = await fetchArticle(item.link);
+        for (const key in fetchedItem) {
+            switch (key) {
+                case 'author':
+                    item.author = setMpNameAsAuthor
+                        ? fetchedItem.mpName || item.author // the Official Account itself. if your route return articles from different accounts, you may want to use this
+                        : fetchedItem.author || item.author; // the real author of the article. if your route return articles from a certain account, use this
+                    break;
+                case 'link':
+                    item.link = skipLink ? item.link : fetchedItem.link || item.link;
+                    break;
+                default:
+                    item[key] = item[key] || fetchedItem[key];
+            }
         }
     }
     return item;

@@ -8,7 +8,7 @@ import { rootUrl } from './utils';
 
 export const route: Route = {
     path: '/user/:id',
-    categories: ['new-media'],
+    categories: ['new-media', 'popular'],
     example: '/odaily/user/2147486902',
     parameters: { id: '用户 id，可在用户页地址栏中找到' },
     features: {
@@ -59,7 +59,12 @@ async function handler(ctx) {
                 const content = load(detailResponse.data.match(/"content":"(.*)","extraction_tags":/)[1]);
 
                 content('img').each(function () {
-                    content(this).attr('src', content(this).attr('src').replaceAll('\\"', ''));
+                    content(this).attr(
+                        'src',
+                        content(this)
+                            .attr('src')
+                            .replaceAll(String.raw`\"`, '')
+                    );
                 });
 
                 item.description = content.html();

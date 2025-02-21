@@ -1,4 +1,4 @@
-import { Route } from '@/types';
+import { Route, ViewType } from '@/types';
 import cache from '@/utils/cache';
 import querystring from 'querystring';
 import got from '@/utils/got';
@@ -9,8 +9,9 @@ import { config } from '@/config';
 
 export const route: Route = {
     path: '/keyword/:keyword/:routeParams?',
-    categories: ['social-media'],
-    example: '/weibo/keyword/DIYgod',
+    categories: ['social-media', 'popular'],
+    view: ViewType.SocialMedia,
+    example: '/weibo/keyword/RSSHub',
     parameters: { keyword: '你想订阅的微博关键词', routeParams: '额外参数；请参阅上面的说明和表格' },
     features: {
         requireConfig: false,

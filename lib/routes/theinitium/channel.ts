@@ -6,7 +6,7 @@ const handler = (ctx) => processFeed('channel', ctx);
 export const route: Route = {
     path: '/channel/:type?/:language?',
     name: '专题・栏目',
-    maintainers: ['prnake'],
+    maintainers: ['prnake', 'mintyfrankie'],
     parameters: {
         type: '栏目，缺省为最新',
         language: '语言，简体`zh-hans`，繁体`zh-hant`，缺省为简体',
@@ -19,10 +19,10 @@ export const route: Route = {
     ],
     handler,
     example: '/theinitium/channel/latest/zh-hans',
-    categories: ['new-media'],
+    categories: ['new-media', 'popular'],
     description: `Type 栏目：
 
-  | 最新   | 深度    | What’s New | 广场              | 科技       | 风物    | 特约     | ... |
-  | ------ | ------- | ---------- | ----------------- | ---------- | ------- | -------- | --- |
-  | latest | feature | news-brief | notes-and-letters | technology | culture | pick_up | ... |`,
+| 最新   | 深度    | What’s New | 广场              | 科技       | 风物    | 特约     | ... |
+| ------ | ------- | ---------- | ----------------- | ---------- | ------- | -------- | --- |
+| latest | feature | news-brief | notes-and-letters | technology | culture | pick_up | ... |`,
 };

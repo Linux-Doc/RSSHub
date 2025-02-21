@@ -26,8 +26,8 @@ export const route: Route = {
     maintainers: ['nczitzk'],
     handler,
     description: `| Français | English | Español | 简体中文 | 繁體中文 | العربية | ਪੰਜਾਬੀ | Tagalog |
-  | -------- | ------- | ------- | -------- | -------- | ------- | --- | ------- |
-  | fr       | en      | es      | zh-hans  | zh-hant  | ar      | pa  | tl      |`,
+| -------- | ------- | ------- | -------- | -------- | ------- | --- | ------- |
+| fr       | en      | es      | zh-hans  | zh-hant  | ar      | pa  | tl      |`,
 };
 
 async function handler(ctx) {
@@ -63,7 +63,7 @@ async function handler(ctx) {
                     .match(/window\._rcState_ = (.*);/)[1];
                 const rcStateJson = JSON.parse(rcState);
                 const news = Object.values(rcStateJson.pagesV2.pages)[0];
-                item.description = news.data.newsStory.body.html.replaceAll('\\n', '<br>');
+                item.description = news.data.newsStory.body.html.replaceAll(String.raw`\n`, '<br>');
 
                 return item;
             })

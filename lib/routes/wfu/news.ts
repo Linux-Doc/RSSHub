@@ -70,10 +70,10 @@ export const route: Route = {
     handler,
     url: 'news.wfu.edu.cn/',
     description: `| **内容** | **参数** |
-  | :------: | :------: |
-  | 潍院要闻 |   wyyw   |
-  | 综合新闻 |   zhxw   |
-  | 学术纵横 |   xszh   |`,
+| :------: | :------: |
+| 潍院要闻 |   wyyw   |
+| 综合新闻 |   zhxw   |
+| 学术纵横 |   xszh   |`,
 };
 
 async function handler(ctx) {
@@ -111,7 +111,7 @@ async function handler(ctx) {
                 };
 
                 // 对于列表的每一项, 单独获取 时间与详细内容
-                // eslint-disable-next-line no-return-await
+
                 const other = await cache.tryGet($item_url, () => loadContent($item_url));
                 // 合并解析后的结果集作为该篇文章最终的输出结果
                 return { ...single, ...other };

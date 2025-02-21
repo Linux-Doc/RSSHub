@@ -2,6 +2,7 @@ import { Route } from '@/types';
 import api from './api';
 import utils from './utils';
 import { fallback, queryToBoolean } from '@/utils/readable-social';
+import { config } from '@/config';
 
 export const route: Route = {
     path: '/tweet/:id/status/:status/:original?',
@@ -57,7 +58,7 @@ async function handler(ctx) {
 
     return {
         title: `Twitter @${userInfo.name}`,
-        link: `https://twitter.com/${userInfo.screen_name}/status/${status}`,
+        link: `https://x.com/${userInfo.screen_name}/status/${status}`,
         image: profileImageUrl.replace(/_normal.jpg$/, '.jpg'),
         description: userInfo.description,
         item,

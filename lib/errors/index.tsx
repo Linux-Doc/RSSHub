@@ -1,11 +1,13 @@
 import { type NotFoundHandler, type ErrorHandler } from 'hono';
 import { getDebugInfo, setDebugInfo } from '@/utils/debug-info';
 import { config } from '@/config';
-import Sentry from '@sentry/node';
+import * as Sentry from '@sentry/node';
 import logger from '@/utils/logger';
 import Error from '@/views/error';
 
 import NotFoundError from './types/not-found';
+
+import { requestMetric } from '@/utils/otel';
 
 export const errorHandler: ErrorHandler = (error, ctx) => {
     const requestPath = ctx.req.path;
@@ -13,8 +15,12 @@ export const errorHandler: ErrorHandler = (error, ctx) => {
     const hasMatchedRoute = matchedRoute !== '/*';
 
     const debug = getDebugInfo();
-    if (ctx.res.headers.get('RSSHub-Cache-Status')) {
-        debug.hitCache++;
+    try {
+        if (ctx.res.headers.get('RSSHub-Cache-Status')) {
+            debug.hitCache++;
+        }
+    } catch {
+        // ignore
     }
     debug.error++;
 
@@ -61,8 +67,9 @@ export const errorHandler: ErrorHandler = (error, ctx) => {
     const message = `${error.name}: ${errorMessage}`;
 
     logger.error(`Error in ${requestPath}: ${message}`);
+    requestMetric.error({ path: matchedRoute, method: ctx.req.method, status: ctx.res.status });
 
-    return config.isPackage
+    return config.isPackage || ctx.req.query('format') === 'json'
         ? ctx.json({
               error: {
                   message: error.message ?? error,

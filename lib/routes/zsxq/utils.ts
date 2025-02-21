@@ -1,10 +1,10 @@
 import got from '@/utils/got';
-import type { TopicImage, Topic, BasicResponse } from './types';
+import type { TopicImage, Topic, BasicResponse, ResponseData } from './types';
 import { parseDate } from '@/utils/parse-date';
 import { config } from '@/config';
 import type { DataItem } from '@/types';
 
-export async function customFetch<T extends BasicResponse<any>>(path: string, retryCount = 0): Promise<T['resp_data']> {
+export async function customFetch<T extends BasicResponse<ResponseData>>(path: string, retryCount = 0): Promise<T['resp_data']> {
     const apiUrl = 'https://api.zsxq.com/v2';
 
     const response = await got(apiUrl + path, {
@@ -38,6 +38,7 @@ export function generateTopicDataItem(topics: Topic[]): DataItem[] {
     return topics.map((topic) => {
         let description: string | undefined;
         let title = '';
+        const url = `https://wx.zsxq.com/topic/${topic.topic_id}`;
         switch (topic.type) {
             case 'talk':
                 title = topic.talk?.text?.split('\n')[0] ?? '文章';
@@ -46,8 +47,9 @@ export function generateTopicDataItem(topics: Topic[]): DataItem[] {
             case 'q&a':
                 title = topic.question?.text?.split('\n')[0] ?? '问答';
                 description = parseTopicContent(topic.question?.text, topic.question?.images);
+                description = `<blockquote>${String(topic.question?.owner?.name ?? '匿名用户')} 提问：${description}</blockquote>`;
                 if (topic.answered) {
-                    description += '<br><br>';
+                    description += '<br>' + topic.answer?.owner.name + ' 回答：<br><br>';
                     description += parseTopicContent(topic.answer?.text, topic.answer?.images);
                 }
                 break;
@@ -65,6 +67,7 @@ export function generateTopicDataItem(topics: Topic[]): DataItem[] {
             title: topic.title ?? title,
             description,
             pubDate: parseDate(topic.create_time),
+            link: url,
         };
     });
 }

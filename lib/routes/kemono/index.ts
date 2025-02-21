@@ -32,14 +32,14 @@ export const route: Route = {
     handler,
     description: `Sources
 
-  | Posts | Patreon | Pixiv Fanbox | Gumroad | SubscribeStar | DLsite | Discord | Fantia |
-  | ----- | ------- | ------------ | ------- | ------------- | ------ | ------- | ------ |
-  | posts | patreon | fanbox       | gumroad | subscribestar | dlsite | discord | fantia |
+| Posts | Patreon | Pixiv Fanbox | Gumroad | SubscribeStar | DLsite | Discord | Fantia |
+| ----- | ------- | ------------ | ------- | ------------- | ------ | ------- | ------ |
+| posts | patreon | fanbox       | gumroad | subscribestar | dlsite | discord | fantia |
 
-  :::tip
+::: tip
   When \`posts\` is selected as the value of the parameter **source**, the parameter **id** does not take effect.
   There is an optinal parameter **limit** which controls the number of posts to fetch, default value is 25.
-  :::`,
+:::`,
 };
 
 async function handler(ctx) {
@@ -97,7 +97,8 @@ async function handler(ctx) {
         const author = isPosts ? '' : await getAuthor(currentUrl, headers);
         title = isPosts ? 'Kemono Posts' : `Posts of ${author} from ${source} | Kemono`;
         image = isPosts ? `${rootUrl}/favicon.ico` : `https://img.kemono.su/icons/${source}/${id}`;
-        items = response.data
+        const responseData = isPosts ? response.data.posts : response.data;
+        items = responseData
             .filter((i) => i.content || i.attachments)
             .slice(0, limit)
             .map((i) => {
@@ -140,6 +141,26 @@ async function handler(ctx) {
                     desc += kemonoFile;
                 }
 
+                let enclosureInfo = {};
+                load(desc)('audio source, video source').each(function () {
+                    const src = $(this).attr('src') ?? '';
+                    const mimeType =
+                        {
+                            m4a: 'audio/mp4',
+                            mp3: 'audio/mpeg',
+                            mp4: 'video/mp4',
+                        }[src.replace(/.*\./, '').toLowerCase()] || null;
+
+                    if (mimeType === null) {
+                        return;
+                    }
+
+                    enclosureInfo = {
+                        enclosure_url: new URL(src, rootUrl).toString(),
+                        enclosure_type: mimeType,
+                    };
+                });
+
                 return {
                     title: i.title,
                     description: desc,
@@ -147,6 +168,7 @@ async function handler(ctx) {
                     pubDate: parseDate(i.published),
                     guid: `${apiUrl}/${i.service}/user/${i.user}/post/${i.id}`,
                     link: `${rootUrl}/${i.service}/user/${i.user}/post/${i.id}`,
+                    ...enclosureInfo,
                 };
             });
     }
@@ -154,7 +176,7 @@ async function handler(ctx) {
     return {
         title,
         image,
-        link: isPosts ? `${rootUrl}/posts` : source === 'discord' ? `${rootUrl}/${source}/server/${id}` : `${rootUrl}/${source}/user/${id}`,
+        link: isPosts ? `${rootUrl}/posts` : (source === 'discord' ? `${rootUrl}/${source}/server/${id}` : `${rootUrl}/${source}/user/${id}`),
         item: items,
     };
 }

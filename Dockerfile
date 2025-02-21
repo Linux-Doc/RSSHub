@@ -1,4 +1,4 @@
-FROM node:21-bookworm AS dep-builder
+FROM node:22-bookworm AS dep-builder
 # Here we use the non-slim image to provide build-time deps (compilers and python), thus no need to install later.
 # This effectively speeds up qemu-based cross-build.
 
@@ -8,6 +8,8 @@ WORKDIR /app
 ARG USE_CHINA_NPM_REGISTRY=0
 RUN \
     set -ex && \
+    npm install -g corepack@latest && \
+    corepack enable pnpm && \
     if [ "$USE_CHINA_NPM_REGISTRY" = 1 ]; then \
         echo 'use npm mirror' && \
         npm config set registry https://registry.npmmirror.com && \
@@ -23,7 +25,6 @@ COPY ./package.json /app/
 RUN \
     set -ex && \
     export PUPPETEER_SKIP_DOWNLOAD=true && \
-    npm install -g pnpm@8.15.7 && \
     pnpm install --frozen-lockfile && \
     pnpm rb
 
@@ -33,7 +34,7 @@ FROM debian:bookworm-slim AS dep-version-parser
 # This stage is necessary to limit the cache miss scope.
 # With this stage, any modification to package.json won't break the build cache of the next two stages as long as the
 # version unchanged.
-# node:21-bookworm-slim is based on debian:bookworm-slim so this stage would not cause any additional download.
+# node:22-bookworm-slim is based on debian:bookworm-slim so this stage would not cause any additional download.
 
 WORKDIR /ver
 COPY ./package.json /app/
@@ -45,7 +46,7 @@ RUN \
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-FROM node:21-bookworm-slim AS docker-minifier
+FROM node:22-bookworm-slim AS docker-minifier
 # The stage is used to further reduce the image size by removing unused files.
 
 WORKDIR /app
@@ -79,7 +80,7 @@ RUN \
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-FROM node:21-bookworm-slim AS chromium-downloader
+FROM node:22-bookworm-slim AS chromium-downloader
 # This stage is necessary to improve build concurrency and minimize the image size.
 # Yeah, downloading Chromium never needs those dependencies below.
 
@@ -102,7 +103,8 @@ RUN \
         fi; \
         echo 'Downloading Chromium...' && \
         unset PUPPETEER_SKIP_DOWNLOAD && \
-        npm install -g pnpm@8.15.7 && \
+        npm install -g corepack@latest && \
+        corepack use pnpm@latest-9 && \
         pnpm add puppeteer@$(cat /app/.puppeteer_version) --save-prod && \
         pnpm rb ; \
     else \
@@ -111,12 +113,12 @@ RUN \
 
 # ---------------------------------------------------------------------------------------------------------------------
 
-FROM node:21-bookworm-slim AS app
+FROM node:22-bookworm-slim AS app
 
 LABEL org.opencontainers.image.authors="https://github.com/DIYgod/RSSHub"
 
-ENV NODE_ENV production
-ENV TZ Asia/Shanghai
+ENV NODE_ENV=production
+ENV TZ=Asia/Shanghai
 
 WORKDIR /app
 
@@ -132,7 +134,7 @@ RUN \
     set -ex && \
     apt-get update && \
     apt-get install -yq --no-install-recommends \
-        dumb-init git \
+        dumb-init git curl \
     ; \
     if [ "$PUPPETEER_SKIP_DOWNLOAD" = 0 ]; then \
         if [ "$TARGETPLATFORM" = 'linux/amd64' ]; then \

@@ -8,7 +8,7 @@ import { rootUrl } from './utils';
 
 export const route: Route = {
     path: '/activity',
-    categories: ['new-media'],
+    categories: ['new-media', 'popular'],
     example: '/odaily/activity',
     parameters: {},
     features: {
@@ -55,7 +55,12 @@ async function handler(ctx) {
                 const content = load(detailResponse.data.match(/"content":"(.*)"}},"secondaryList":/)[1]);
 
                 content('img').each(function () {
-                    content(this).attr('src', content(this).attr('src').replaceAll('\\"', ''));
+                    content(this).attr(
+                        'src',
+                        content(this)
+                            .attr('src')
+                            .replaceAll(String.raw`\"`, '')
+                    );
                 });
 
                 item.description = content.html();

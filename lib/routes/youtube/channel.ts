@@ -30,10 +30,10 @@ export const route: Route = {
             target: '/channel/:id',
         },
     ],
-    name: 'Channel',
+    name: 'Channel with id',
     maintainers: ['DIYgod'],
     handler,
-    description: `:::tip
+    description: `::: tip
 YouTube provides official RSS feeds for channels, for instance [https://www.youtube.com/feeds/videos.xml?channel\_id=UCDwDMPOZfxVV0x\_dz0eQ8KQ](https://www.youtube.com/feeds/videos.xml?channel_id=UCDwDMPOZfxVV0x_dz0eQ8KQ).
 :::`,
 };
@@ -69,6 +69,7 @@ async function handler(ctx) {
                     pubDate: parseDate(snippet.publishedAt),
                     link: `https://www.youtube.com/watch?v=${videoId}`,
                     author: snippet.videoOwnerChannelTitle,
+                    image: img.url,
                 };
             }),
     };

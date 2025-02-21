@@ -7,20 +7,12 @@ export const route: Route = {
     categories: ['traditional-media'],
     example: '/zaobao/realtime/china',
     parameters: { section: '分类，缺省为 china' },
-    features: {
-        requireConfig: false,
-        requirePuppeteer: false,
-        antiCrawler: false,
-        supportBT: false,
-        supportPodcast: false,
-        supportScihub: false,
-    },
     name: '即时新闻',
     maintainers: ['shunf4'],
     handler,
     description: `| 中国  | 新加坡    | 国际  | 财经     |
-  | ----- | --------- | ----- | -------- |
-  | china | singapore | world | zfinance |`,
+| ----- | --------- | ----- | -------- |
+| china | singapore | world | zfinance |`,
 };
 
 async function handler(ctx) {

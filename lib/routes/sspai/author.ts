@@ -22,7 +22,7 @@ async function getUserId(slug) {
 
 export const route: Route = {
     path: '/author/:id',
-    categories: ['new-media'],
+    categories: ['new-media', 'popular'],
     example: '/sspai/author/796518',
     parameters: { id: '作者 slug 或 id，slug 可在作者主页URL中找到，id 不易查找，仅作兼容' },
     features: {
@@ -55,13 +55,19 @@ async function handler(ctx) {
     const author_nickname = data[0].author.nickname;
     const items = await Promise.all(
         data.map((item) => {
-            const link = `https://sspai.com/api/v1/article/info/get?id=${item.id}&view=second`;
+            const link = `https://sspai.com/api/v1/article/info/get?id=${item.id}&view=second&support_webp=true`;
             let description = '';
 
             const key = `sspai: ${item.id}`;
             return cache.tryGet(key, async () => {
                 const response = await got(link);
-                description = response.data.data.body;
+                // description = response.data.data.body;
+                const articleData = response.data.data;
+                const banner = articleData.promote_image;
+                if (banner) {
+                    description = `<img src="${banner}" alt="Article Cover Image" style="display: block; margin: 0 auto;"><br>`;
+                }
+                description += articleData.body;
 
                 return {
                     title: item.title.trim(),

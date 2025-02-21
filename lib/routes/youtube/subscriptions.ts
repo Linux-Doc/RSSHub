@@ -77,12 +77,14 @@ async function handler(ctx) {
                 pubDate: parseDate(snippet.publishedAt),
                 link: `https://www.youtube.com/watch?v=${videoId}`,
                 author: snippet.videoOwnerChannelTitle,
+                image: img.url,
             };
         });
 
     const ret = {
         title: 'Subscriptions - YouTube',
         description: 'YouTube Subscriptions',
+        link: 'www.youtube.com/feed/subscriptions',
         item: items,
     };
 

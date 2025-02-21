@@ -4,7 +4,7 @@ import { parseDate } from '@/utils/parse-date';
 
 export const route: Route = {
     path: '/series/:id',
-    categories: ['new-media'],
+    categories: ['new-media', 'popular'],
     example: '/sspai/series/77',
     parameters: { id: '专栏 id' },
     features: {
@@ -36,7 +36,7 @@ async function handler(ctx) {
         response.data.data.map(async (item) => {
             let description = '';
             if (item.probation) {
-                const res = await got(`https://sspai.com/api/v1/article/info/get?id=${item.id}&view=second`);
+                const res = await got(`https://sspai.com/api/v1/article/info/get?id=${item.id}&view=second&support_webp=true`);
                 description = res.data.data.body;
             } else {
                 description = `<img src="https://cdn.sspai.com/${item.banner}">`;

@@ -1,4 +1,4 @@
-import { Route } from '@/types';
+import { Route, Data } from '@/types';
 import got from '@/utils/got';
 import { load } from 'cheerio';
 import { isValidHost } from '@/utils/valid-host';
@@ -6,7 +6,7 @@ import { headers, parseItems } from './utils';
 import InvalidParameterError from '@/errors/types/invalid-parameter';
 
 export const route: Route = {
-    path: '/:language?/users/:username',
+    path: '/users/:username/:language?',
     categories: ['multimedia'],
     example: '/pornhub/users/pornhubmodels',
     parameters: { language: 'language, see below', username: 'username, part of the url e.g. `pornhub.com/users/pornhubmodels`' },
@@ -29,7 +29,7 @@ export const route: Route = {
     handler,
 };
 
-async function handler(ctx) {
+async function handler(ctx): Promise<Data> {
     const { language = 'www', username } = ctx.req.param();
     const link = `https://${language}.pornhub.com/users/${username}/videos`;
     if (!isValidHost(language)) {
@@ -43,12 +43,10 @@ async function handler(ctx) {
         .map((e) => parseItems($(e)));
 
     return {
-        title: $('title').first().text(),
+        title: $('.profileUserName a').text(),
         description: $('.aboutMeText').text().trim(),
         link,
-        image: $('#coverPictureDefault').attr('src'),
-        logo: $('#getAvatar').attr('src'),
-        icon: $('#getAvatar').attr('src'),
+        image: $('#getAvatar').attr('src'),
         language: $('html').attr('lang'),
         allowEmpty: true,
         item: items,
